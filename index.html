@@ -254,7 +254,7 @@
 
                     const res = await fetch(
 
-                        `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${firstDay}&primary_release_date.lte=${lastDate}&region=${region}&sort_by=vote_count.desc`,
+                        `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${firstDay}&primary_release_date.lte=${lastDate}&region=${region}&sort_by=vote_count.desc&with_runtime.gte=60`,
 
                         {
 
@@ -467,7 +467,5 @@
 </body>
 
 </html>
-
- 
 
  
