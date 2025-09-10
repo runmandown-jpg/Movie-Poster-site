@@ -164,11 +164,13 @@
 
  
 
-            // === YOUR AMAZON ASSOCIATES TRACKING ID HERE ===
+            // === YOUR AMAZON ASSOCIATES TRACKING IDS HERE ===
 
-            // Replace 'YOUR_TRACKING_ID' with your actual ID to earn commissions.
+            // Replace 'YOUR_UK_TRACKING_ID' and 'YOUR_US_TRACKING_ID' with your actual IDs to earn commissions.
 
-            const amazonTrackingId = 'botm0e-21';
+            const amazonTrackingIdUK = 'botm0e-21';
+
+            const amazonTrackingIdUS = 'botmus-20';
 
  
 
@@ -176,7 +178,7 @@
 
             let month = new Date().getMonth() + 1;
 
-            let region = "US";
+            let region = "UK"; // Default to UK as per your request
 
            
 
@@ -352,17 +354,45 @@
 
                             const amazonSearchQuery = encodeURIComponent(`${m.title} bluray`);
 
-                            let amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}`;
+                            let amazonLink = '';
+
+                            let buttonText = 'Buy on Amazon';
 
  
 
-                            if (amazonTrackingId !== 'YOUR_TRACKING_ID') {
+                            if (region === 'UK') {
 
-                                amazonLink += `&tag=${amazonTrackingId}`;
+                                amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}`;
+
+                                buttonText = 'Buy on Amazon UK';
+
+                                if (amazonTrackingIdUK !== 'YOUR_UK_TRACKING_ID') {
+
+                                    amazonLink += `&tag=${amazonTrackingIdUK}`;
+
+                                }
+
+                            } else if (region === 'US') {
+
+                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`;
+
+                                buttonText = 'Buy on Amazon US';
+
+                                if (amazonTrackingIdUS !== 'YOUR_US_TRACKING_ID') {
+
+                                    amazonLink += `&tag=${amazonTrackingIdUS}`;
+
+                                }
+
+                            } else {
+
+                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`; // Default to US if region is not US/UK
+
+                                buttonText = 'Buy on Amazon';
 
                             }
 
- 
+                           
 
                             return `
 
@@ -414,7 +444,7 @@
 
                                             <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-yellow-500 text-gray-900 text-sm font-semibold rounded-full hover:bg-yellow-400 transition-colors duration-200">
 
-                                                Buy on Amazon UK
+                                                ${buttonText}
 
                                             </a>
 
