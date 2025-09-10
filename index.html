@@ -166,8 +166,6 @@
 
             // === YOUR AMAZON ASSOCIATES TRACKING IDS HERE ===
 
-            // Replace 'YOUR_UK_TRACKING_ID' and 'YOUR_US_TRACKING_ID' with your actual IDs to earn commissions.
-
             const amazonTrackingIdUK = 'botm0e-21';
 
             const amazonTrackingIdUS = 'botmus-20';
@@ -178,7 +176,7 @@
 
             let month = new Date().getMonth() + 1;
 
-            let region = "UK"; // Default to UK as per your request
+            let region = "UK";
 
            
 
@@ -318,17 +316,49 @@
 
                     const top10Movies = (data.results || []).slice(0, 10);
 
+                   
+
+                    // Filter movies with no poster, and then fetch their IMDb ID
+
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
+
+                    const moviesWithImdb = await Promise.all(
+
+                        moviesWithPosters.map(async (movie) => {
+
+                            const externalIdsRes = await fetch(
+
+                                `https://api.themoviedb.org/3/movie/${movie.id}/external_ids`,
+
+                                {
+
+                                    headers: {
+
+                                        Authorization: `Bearer ${token}`,
+
+                                    },
+
+                                }
+
+                            );
+
+                            const externalIdsData = await externalIdsRes.json();
+
+                            return { ...movie, imdb_id: externalIdsData.imdb_id };
+
+                        })
+
+                    );
 
                    
 
-                    if (moviesWithPosters.length === 0) {
+                    if (moviesWithImdb.length === 0) {
 
                         contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">No posters available for this month and region.</div>`;
 
                     } else {
 
-                        renderMovies(moviesWithPosters);
+                        renderMovies(moviesWithImdb);
 
                     }
 
@@ -386,7 +416,7 @@
 
                             } else {
 
-                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`; // Default to US if region is not US/UK
+                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`;
 
                                 buttonText = 'Buy on Amazon';
 
@@ -394,17 +424,25 @@
 
                            
 
+                            const imdbLink = m.imdb_id ? `https://www.imdb.com/title/${m.imdb_id}` : '#';
+
+                            const imdbTarget = m.imdb_id ? '_blank' : '_self';
+
+                            const imdbRel = m.imdb_id ? 'noopener noreferrer' : '';
+
+ 
+
                             return `
 
                                 <div class="flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
 
                                     <a
 
-                                        href="https://www.imdb.com/title/${m.imdb_id}"
+                                        href="${imdbLink}"
 
-                                        target="_blank"
+                                        target="${imdbTarget}"
 
-                                        rel="noopener noreferrer"
+                                        rel="${imdbRel}"
 
                                     >
 
@@ -426,11 +464,11 @@
 
                                         <a
 
-                                            href="https://www.imdb.com/title/${m.imdb_id}"
+                                            href="${imdbLink}"
 
-                                            target="_blank"
+                                            target="${imdbTarget}"
 
-                                            rel="noopener noreferrer"
+                                            rel="${imdbRel}"
 
                                             class="block text-white text-base font-bold leading-tight line-clamp-2 hover:text-red-400 transition-colors duration-200 mb-2"
 
