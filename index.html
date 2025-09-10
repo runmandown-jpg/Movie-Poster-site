@@ -142,6 +142,16 @@
 
     </div>
 
+   
+
+    <!-- Affiliate Disclosure -->
+
+    <div class="text-center text-xs text-gray-500 mt-10">
+
+        <p>As an Amazon Associate, I earn from qualifying purchases. This site uses affiliate links to generate revenue.</p>
+
+    </div>
+
  
 
     <script>
@@ -151,6 +161,14 @@
             // Hardcoded TMDb API Bearer Token
 
             const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NmFjMzdmY2M2NTIyMDljODI2MWQ2M2RmYjNhNWJhYSIsIm5iZiI6MTc1NjQ5MDU0Mi4wODksInN1YiI6IjY4YjFlYjJlM2NhZmM5ZjEyYjU0ZGE2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SuTr-jDVinXLwrFu2QpoozseO5TOeK7Uy_0HIPxqYZA";
+
+ 
+
+            // === YOUR AMAZON ASSOCIATES TRACKING ID HERE ===
+
+            // Replace 'YOUR_TRACKING_ID' with your actual ID to earn commissions.
+
+            const amazonTrackingId = 'botm0e-21';
 
  
 
@@ -300,45 +318,15 @@
 
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
 
- 
+                   
 
-                    const moviesWithImdb = await Promise.all(
-
-                        moviesWithPosters.map(async (movie) => {
-
-                            const externalIdsRes = await fetch(
-
-                                `https://api.themoviedb.org/3/movie/${movie.id}/external_ids`,
-
-                                {
-
-                                    headers: {
-
-                                        Authorization: `Bearer ${token}`,
-
-                                    },
-
-                                }
-
-                            );
-
-                            const externalIdsData = await externalIdsRes.json();
-
-                            return { ...movie, imdb_id: externalIdsData.imdb_id };
-
-                        })
-
-                    );
-
-           
-
-                    if (moviesWithImdb.length === 0) {
+                    if (moviesWithPosters.length === 0) {
 
                         contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">No posters available for this month and region.</div>`;
 
                     } else {
 
-                        renderMovies(moviesWithImdb);
+                        renderMovies(moviesWithPosters);
 
                     }
 
@@ -360,45 +348,85 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center">
 
-                        ${movies.map(m => `
+                        ${movies.map(m => {
 
-                            <a
+                            const amazonSearchQuery = encodeURIComponent(`${m.title} bluray`);
 
-                                href="https://www.imdb.com/title/${m.imdb_id}"
+                            let amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}`;
 
-                                target="_blank"
+ 
 
-                                rel="noopener noreferrer"
+                            if (amazonTrackingId !== 'YOUR_TRACKING_ID') {
 
-                                class="flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300"
+                                amazonLink += `&tag=${amazonTrackingId}`;
 
-                            >
+                            }
 
-                                <img
+ 
 
-                                    src="https://image.tmdb.org/t/p/w500${m.poster_path}"
+                            return `
 
-                                    alt="${m.title}"
+                                <div class="flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
 
-                                    class="w-full h-auto object-cover"
+                                    <a
 
-                                    onerror="this.onerror=null; this.src='https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}';"
+                                        href="https://www.imdb.com/title/${m.imdb_id}"
 
-                                />
+                                        target="_blank"
 
-                                <div class="p-4 text-center bg-gray-800 flex-grow">
+                                        rel="noopener noreferrer"
 
-                                    <span class="text-white text-base font-bold leading-tight line-clamp-2">
+                                    >
 
-                                        ${m.title}
+                                        <img
 
-                                    </span>
+                                            src="https://image.tmdb.org/t/p/w500${m.poster_path}"
+
+                                            alt="${m.title}"
+
+                                            class="w-full h-auto object-cover"
+
+                                            onerror="this.onerror=null; this.src='https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}';"
+
+                                        />
+
+                                    </a>
+
+                                    <div class="p-4 text-center bg-gray-800 flex-grow">
+
+                                        <a
+
+                                            href="https://www.imdb.com/title/${m.imdb_id}"
+
+                                            target="_blank"
+
+                                            rel="noopener noreferrer"
+
+                                            class="block text-white text-base font-bold leading-tight line-clamp-2 hover:text-red-400 transition-colors duration-200 mb-2"
+
+                                        >
+
+                                            ${m.title}
+
+                                        </a>
+
+                                        <div class="flex flex-col space-y-2 mt-2">
+
+                                            <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-yellow-500 text-gray-900 text-sm font-semibold rounded-full hover:bg-yellow-400 transition-colors duration-200">
+
+                                                Buy on Amazon UK
+
+                                            </a>
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
-                            </a>
+                            `;
 
-                        `).join('')}
+                        }).join('')}
 
                     </div>
 
