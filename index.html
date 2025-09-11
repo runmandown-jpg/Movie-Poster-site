@@ -95,6 +95,12 @@
             const regionSelect = document.getElementById('region-select');
             const prevMonthBtn = document.getElementById('prev-month-btn');
             const nextMonthBtn = document.getElementById('next-month-btn');
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            });
 
             // Populate dropdowns
             const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
@@ -158,13 +164,12 @@
                     const data = await res.json();
                     const top10Movies = (data.results || []).slice(0, 10);
                     
-                    // Filter movies with no poster, and then fetch their IMDb ID and streaming info
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
                     const moviesWithInfo = await Promise.all(
                         moviesWithPosters.map(async (movie) => {
-                            const [externalIdsRes, providersRes] = await Promise.all([
+                            const [detailsRes, providersRes] = await Promise.all([
                                 fetch(
-                                    `https://api.themoviedb.org/3/movie/${movie.id}/external_ids`,
+                                    `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
                                     {
                                         headers: {
                                             Authorization: `Bearer ${token}`,
@@ -180,17 +185,19 @@
                                     }
                                 )
                             ]);
-
-                            const externalIdsData = await externalIdsRes.json();
+                            
+                            const detailsData = await detailsRes.json();
                             const providersData = await providersRes.json();
                             const providersByRegion = providersData.results[region];
                             
-                            // Check if Amazon Prime Video is a flatrate provider
                             const isAvailableOnPrime = providersByRegion && providersByRegion.flatrate && providersByRegion.flatrate.some(p => p.provider_name === 'Amazon Prime Video');
-
+                            
                             return { 
                                 ...movie, 
-                                imdb_id: externalIdsData.imdb_id,
+                                budget: detailsData.budget,
+                                revenue: detailsData.revenue,
+                                vote_average: detailsData.vote_average,
+                                imdb_id: detailsData.imdb_id,
                                 isAvailableOnPrime: isAvailableOnPrime
                             };
                         })
@@ -215,29 +222,19 @@
                             let amazonLink = '';
                             let buttonText = 'Buy on Amazon';
                             let primeLink = '';
-                            let primeButtonText = 'Watch on Prime';
-
+                            
                             if (region === 'UK') {
                                 amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}`;
                                 buttonText = 'Buy on Amazon UK';
                                 primeLink = `https://www.amazon.co.uk/prime?tag=${amazonTrackingIdUK}`;
-                                primeButtonText = 'Watch on Prime UK';
-                                if (amazonTrackingIdUK) {
-                                    amazonLink += `&tag=${amazonTrackingIdUK}`;
-                                }
                             } else if (region === 'US') {
                                 amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`;
                                 buttonText = 'Buy on Amazon US';
                                 primeLink = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`;
-                                primeButtonText = 'Watch on Prime US';
-                                if (amazonTrackingIdUS) {
-                                    amazonLink += `&tag=${amazonTrackingIdUS}`;
-                                }
                             } else {
                                 amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`;
                                 buttonText = 'Buy on Amazon';
                                 primeLink = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`; // Default to US
-                                primeButtonText = 'Watch on Prime';
                             }
                            
                             const imdbLink = m.imdb_id ? `https://www.imdb.com/title/${m.imdb_id}` : '#';
@@ -245,7 +242,7 @@
                             const imdbRel = m.imdb_id ? 'noopener noreferrer' : '';
 
                             return `
-                                <div class="flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
+                                <div class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
                                     <a
                                         href="${imdbLink}"
                                         target="${imdbTarget}"
@@ -267,15 +264,18 @@
                                         >
                                             ${m.title}
                                         </a>
+                                        <div class="text-xs text-gray-300 text-left space-y-1 mb-2">
+                                            <p><span class="font-semibold text-white">TMDb Rating:</span> ${m.vote_average ? `${m.vote_average.toFixed(1)}/10` : 'N/A'}</p>
+                                        </div>
                                         <div class="flex flex-col space-y-2 mt-2">
                                             <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-yellow-500 text-gray-900 text-sm font-semibold rounded-full hover:bg-yellow-400 transition-colors duration-200">
                                                 ${buttonText}
                                             </a>
                                             ${m.isAvailableOnPrime ? `
                                                 <a href="${primeLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition-colors duration-200">
-                                                    ${primeButtonText}
-                                                </a>` : ''
-                                            }
+                                                    Watch on Prime
+                                                </a>
+                                            ` : ''}
                                         </div>
                                     </div>
                                 </div>
@@ -323,4 +323,3 @@
     </script>
 </body>
 </html>
-
