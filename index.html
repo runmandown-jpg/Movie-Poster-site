@@ -70,10 +70,24 @@
         </div>
         
     </div>
-    
-    <!-- Affiliate Disclosure -->
-    <div class="text-center text-xs text-gray-500 mt-10">
-        <p>As an Amazon Associate, I earn from qualifying purchases. This site uses affiliate links to generate revenue.</p>
+
+    <!-- New Prime Banner with Corrected Text-Based Logo -->
+    <div class="mt-12 bg-gray-800 p-8 rounded-xl shadow-xl flex flex-col sm:flex-row items-center justify-between space-y-6 sm:space-y-0 sm:space-x-8">
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
+            <!-- Simple text for the logo -->
+            <div class="flex items-center space-x-1">
+                <span class="text-white text-3xl font-bold">prime video</span>
+            </div>
+            <p class="text-xl sm:text-2xl font-bold text-blue-400">
+                Start your 30-day free trial
+            </p>
+            <p class="text-sm sm:text-base font-semibold text-gray-300 max-w-lg">
+                Unlimited streaming of Movies & TV with Amazon Prime
+            </p>
+        </div>
+        <a href="" id="prime-banner-link" target="_blank" rel="noopener noreferrer" class="px-8 py-4 bg-yellow-500 text-gray-900 font-bold text-lg rounded-full shadow-lg hover:bg-yellow-400 transition-colors duration-200 whitespace-nowrap">
+            Start Free Trial
+        </a>
     </div>
 
     <script>
@@ -106,6 +120,7 @@
             const regionSelect = document.getElementById('region-select');
             const prevMonthBtn = document.getElementById('prev-month-btn');
             const nextMonthBtn = document.getElementById('next-month-btn');
+            const primeBannerLink = document.getElementById('prime-banner-link');
             const formatter = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
@@ -146,13 +161,24 @@
             });
             regionSelect.value = region;
 
+            // Set the prime banner link based on the initial region
+            if (region === 'UK') {
+                primeBannerLink.href = `https://www.amazon.co.uk/prime?tag=${amazonTrackingIdUK}`;
+            } else {
+                primeBannerLink.href = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`;
+            }
+
+
             const fetchMovies = async () => {
                 if (!TMDB_TOKEN) {
                     contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">A valid TMDb token is required to fetch movies.</div>`;
                     return;
                 }
                 
-                contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">Loading movies...</div>`;
+                contentArea.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 space-y-4">
+                                            <div class="spinner"></div>
+                                            <p class="text-center text-lg text-gray-400">Loading movies...</p>
+                                         </div>`;
 
                 try {
                     const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -168,8 +194,11 @@
                         }
                     );
             
+                    if (res.status === 401) {
+                        throw new Error('401 - Unauthorized. Please check your TMDb token as it may be invalid or expired.');
+                    }
                     if (!res.ok) {
-                        throw new Error(`API Error: ${res.status} - ${res.statusText}`);
+                        throw new Error(`${res.status} - ${res.statusText}`);
                     }
             
                     const data = await res.json();
@@ -230,7 +259,7 @@
                     }
                 } catch (e) {
                     console.error(e);
-                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch movies. Please check your token and try again, or try a different month/year. The API may not have revenue data for this period.</div>`;
+                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch movies: ${e.message}</div>`;
                 }
             };
 
@@ -261,6 +290,11 @@
                             const imdbTarget = m.imdb_id ? '_blank' : '_self';
                             const imdbRel = m.imdb_id ? 'noopener noreferrer' : '';
 
+                            // Determine the correct image source based on whether a poster path exists
+                            const posterSrc = m.poster_path 
+                                ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
+                                : `https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}`;
+
                             return `
                                 <div class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
                                     <a
@@ -269,10 +303,9 @@
                                         rel="${imdbRel}"
                                     >
                                         <img
-                                            src="https://image.tmdb.org/t/p/w500${m.poster_path}"
+                                            src="${posterSrc}"
                                             alt="${m.title}"
                                             class="w-full h-auto object-cover"
-                                            onerror="this.onerror=null; this.src='https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}';"
                                         />
                                     </a>
                                     <div class="p-4 text-center bg-gray-800 flex-grow">
@@ -332,6 +365,11 @@
 
             regionSelect.addEventListener('change', (e) => {
                 region = e.target.value;
+                if (region === 'UK') {
+                    primeBannerLink.href = `https://www.amazon.co.uk/prime?tag=${amazonTrackingIdUK}`;
+                } else {
+                    primeBannerLink.href = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`;
+                }
                 fetchMovies();
             });
 
