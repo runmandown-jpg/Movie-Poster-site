@@ -244,11 +244,11 @@
                             let primeLink = '';
                             
                             if (region === 'UK') {
-                                amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}`;
+                                amazonLink = `https://www.amazon.co.uk/s?k=${amazonSearchQuery}&tag=${amazonTrackingIdUK}`;
                                 buttonText = 'Buy on Amazon UK';
                                 primeLink = `https://www.amazon.co.uk/prime?tag=${amazonTrackingIdUK}`;
                             } else if (region === 'US') {
-                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}`;
+                                amazonLink = `https://www.amazon.com/s?k=${amazonSearchQuery}&tag=${amazonTrackingIdUS}`;
                                 buttonText = 'Buy on Amazon US';
                                 primeLink = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`;
                             } else {
@@ -284,7 +284,7 @@
                                         >
                                             ${m.title}
                                         </a>
-                                        <div class="text-xs text-gray-300 text-left space-y-1 mb-2">
+                                        <div class="text-xs text-gray-300 text-center space-y-1 mb-2">
                                             <p><span class="font-semibold text-white">TMDb Rating:</span> ${m.vote_average ? `${m.vote_average.toFixed(1)}/10` : 'N/A'}</p>
                                         </div>
                                         <div class="flex flex-col space-y-2 mt-2">
