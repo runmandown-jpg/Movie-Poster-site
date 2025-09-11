@@ -79,11 +79,22 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Hardcoded TMDb API Bearer Token
-            const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NmFjMzdmY2M2NTIyMDljODI2MWQ2M2RmYjNhNWJhYSIsIm5iZiI6MTc1NjQ5MDU0Mi4wODksInN1YiI6IjY4YjFlYjJlM2NhZmM5ZjEyYjU0ZGE2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SuTr-jDVinXLwrFu2QpoozseO5TOeK7Uy_0HIPxqYZA";
+            const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NmFjMzdmY2M2NTIyMDljODI2MWQ2M2RmYjNhNWJhYSIsIm5iZiI6MTc1NjQ5MDU0Mi4wODksInN1YiI6IjY4YjFlYjJlM2NhZmM5ZjEyYjU0ZGE2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SuTr-jDVinXLwrFu2QpoozseO5TOeK7Uy_0HIPxqYZA";
 
             // === YOUR AMAZON ASSOCIATES TRACKING IDS HERE ===
             const amazonTrackingIdUK = 'botm0e-21'; 
             const amazonTrackingIdUS = 'botmus-20';
+            
+            // Mapping for TMDb region codes
+            const tmdbRegionMapping = {
+                "US": "US",
+                "UK": "GB", // The correct TMDb code for United Kingdom
+                "FR": "FR",
+                "DE": "DE",
+                "IN": "IN",
+                "JP": "JP",
+                "KR": "KR",
+            };
 
             let year = new Date().getFullYear();
             let month = new Date().getMonth() + 1;
@@ -136,11 +147,11 @@
             regionSelect.value = region;
 
             const fetchMovies = async () => {
-                if (!token) {
+                if (!TMDB_TOKEN) {
                     contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">A valid TMDb token is required to fetch movies.</div>`;
                     return;
                 }
-
+                
                 contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">Loading movies...</div>`;
 
                 try {
@@ -152,7 +163,7 @@
                         `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${firstDay}&primary_release_date.lte=${lastDate}&region=${region}&sort_by=vote_count.desc&with_runtime.gte=60`,
                         {
                             headers: {
-                                Authorization: `Bearer ${token}`,
+                                Authorization: `Bearer ${TMDB_TOKEN}`,
                             },
                         }
                     );
@@ -165,33 +176,42 @@
                     const top10Movies = (data.results || []).slice(0, 10);
                     
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
+
+                    // Fetch streaming providers for each movie
                     const moviesWithInfo = await Promise.all(
                         moviesWithPosters.map(async (movie) => {
-                            const [detailsRes, providersRes] = await Promise.all([
-                                fetch(
-                                    `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
-                                    {
-                                        headers: {
-                                            Authorization: `Bearer ${token}`,
-                                        },
-                                    }
-                                ),
-                                fetch(
-                                    `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers`,
-                                    {
-                                        headers: {
-                                            Authorization: `Bearer ${token}`,
-                                        },
-                                    }
-                                )
-                            ]);
-                            
+                            // Get details including IMDB ID
+                            const detailsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
                             const detailsData = await detailsRes.json();
+                            
+                            // Use the new TMDb API endpoint for providers
+                            let isAvailableOnPrime = false;
+                            const providersRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
                             const providersData = await providersRes.json();
-                            const providersByRegion = providersData.results[region];
                             
-                            const isAvailableOnPrime = providersByRegion && providersByRegion.flatrate && providersByRegion.flatrate.some(p => p.provider_name === 'Amazon Prime Video');
+                            // Use the correct TMDb region code from our mapping
+                            const providers = providersData.results[tmdbRegionMapping[region]];
                             
+                            if (providers && providers.flatrate) {
+                                isAvailableOnPrime = providers.flatrate.some(provider => 
+                                    provider.provider_name === 'Amazon Prime Video'
+                                );
+                            }
+
                             return { 
                                 ...movie, 
                                 budget: detailsData.budget,
