@@ -45,7 +45,7 @@
                 <button id="all-time-btn" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200">
                     All Time Top 10
                 </button>
-                <button id="anticipated-btn" class="px-4 py-2 bg-gray-400 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-gray-500 transition-colors duration-200">
+                <button id="anticipated-btn" class="px-4 py-2 bg-yellow-500 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-yellow-400 transition-colors duration-200">
                     Anticipated Movies
                 </button>
             </div>
@@ -118,7 +118,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // TMDb API Bearer Token
+            // =========================================================
+            // ACTION REQUIRED: PASTE YOUR TMDb TOKEN HERE
+            // This token is required to fetch movie data from the API.
+            // =========================================================
             const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NmFjMzdmY2M2NTIyMDljODI2MWQ2M2RmYjNhNWJhYSIsIm5iZiI6MTc1NjQ5MDU0Mi4wODksInN1YiI6IjY4YjFlYjJlM2NhZmM5ZjEyYjU0ZGE2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SuTr-jDVinXLwrFu2QpoozseO5TOeK7Uy_0HIPxqYZA";
 
             // === YOUR AMAZON ASSOCIATES TRACKING IDS HERE ===
@@ -215,7 +218,7 @@
                                              </div>`;
                 
                 if (isAllTimeView) {
-                    mainTitle.innerHTML = 'All-Time <span class="text-red-500">Top 10</span> Grossing Movies';
+                    mainTitle.innerHTML = 'All Time <span class="text-red-500">Top 10</span> Grossing Movies';
                     dynamicControls.classList.add('hidden');
                     prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
                     nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
@@ -224,7 +227,7 @@
                 }
 
                 if (isAnticipatedView) {
-                    mainTitle.innerHTML = 'Anticipated Upcoming <span class="text-red-500">Movies</span>';
+                    mainTitle.innerHTML = '<span class="text-red-500">Upcoming Movies</span>';
                     dynamicControls.classList.add('hidden');
                     prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
                     nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
@@ -239,7 +242,7 @@
                 
                 if (selectedDate > today) {
                     sortBy = 'popularity.desc';
-                    mainTitle.innerHTML = `Anticipated <span class="text-red-500">Movies</span> for ${months[month - 1].name} ${year}`;
+                    mainTitle.innerHTML = `<span class="text-red-500">Upcoming Movies for ${months[month - 1].name} ${year}</span>`;
                 } else {
                     mainTitle.innerHTML = `<span class="text-gray-400">Top 10</span> <span class="text-red-500">Box Office Hits</span>`;
                 }
@@ -434,6 +437,7 @@
             const fetchAndRenderAnticipatedMovies = async () => {
                 try {
                     const today = new Date().toISOString().slice(0, 10);
+                    // Fetch popular upcoming movies
                     const res = await fetch(
                         `https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&primary_release_date.gte=${today}&with_runtime.gte=60`,
                         {
@@ -452,6 +456,9 @@
 
                     const data = await res.json();
                     const top10Movies = (data.results || []).slice(0, 10);
+                    
+                    // Sort the fetched movies by release date (soonest first)
+                    top10Movies.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
 
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
 
