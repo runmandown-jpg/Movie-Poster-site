@@ -19,59 +19,85 @@
         h1 {
             font-family: 'Oswald', sans-serif;
         }
+        .movie-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen py-10 px-4 sm:px-8">
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-4xl sm:text-5xl font-extrabold text-center mb-6 tracking-wide text-red-500">
-            Top 10 Box Office Hits
+        <h1 id="main-title" class="text-4xl sm:text-5xl font-extrabold text-center mb-6 tracking-wide">
+            <span class="text-gray-400">Top 10</span> <span class="text-red-500">Box Office Hits</span>
         </h1>
         <p class="text-center text-gray-400 mb-10">
             Browse the top grossing movies by month.
         </p>
 
-        <!-- Input controls -->
+        <!-- Top Input controls -->
         <div class="flex flex-col items-center justify-center space-y-4 mb-12 max-w-2xl mx-auto">
-            <div class="flex flex-wrap justify-center items-center gap-4 w-full">
-                <div class="flex flex-col items-start w-28">
-                    <label for="year-select" class="text-sm font-semibold text-gray-300 mb-1">Year</label>
-                    <select id="year-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
-                </div>
-
+            <!-- Top Button Container for All-Time and Anticipated -->
+            <div class="flex flex-wrap justify-center gap-4 w-full">
+                <button id="all-time-btn" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200">
+                    All Time Top 10
+                </button>
+                <button id="anticipated-btn" class="px-4 py-2 bg-gray-400 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-gray-500 transition-colors duration-200">
+                    Anticipated Movies
+                </button>
+            </div>
+            <!-- End Top Button Container -->
+            
+            <div id="dynamic-controls" class="flex flex-wrap justify-center items-center gap-4 w-full">
                 <div class="flex flex-col items-start w-36">
                     <label for="month-select" class="text-sm font-semibold text-gray-300 mb-1">Month</label>
                     <select id="month-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
+                </div>
+                
+                <div class="flex flex-col items-start w-28">
+                    <label for="year-select" class="text-sm font-semibold text-gray-300 mb-1">Year</label>
+                    <select id="year-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
 
                 <div class="flex flex-col items-start w-28">
                     <label for="region-select" class="text-sm font-semibold text-gray-300 mb-1">Region</label>
                     <select id="region-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
-            
-                <!-- Updated Button Container -->
-                <div class="flex flex-col items-start w-28">
-                    <label class="text-sm font-semibold text-gray-300 mb-1 opacity-0">Buttons</label>
-                    <div class="flex items-end space-x-2 w-full">
-                        <button id="prev-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
-                            Prev
-                        </button>
-                        <button id="next-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
-                            Next
-                        </button>
-                    </div>
-                </div>
-                <!-- End Updated Button Container -->
             </div>
+          
+            <!-- Top Button Container for Prev/Next -->
+            <div class="flex flex-wrap justify-center gap-4 w-full mt-4">
+                <button id="prev-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+                    Prev
+                </button>
+                <button id="next-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+                    Next
+                </button>
+            </div>
+            <!-- End Top Button Container -->
         </div>
 
         <!-- Movie Grid and Messages -->
         <div id="content-area" class="text-center text-lg text-gray-400 mt-20">
             <p>Loading movies...</p>
         </div>
-        
     </div>
 
-    <!-- New Prime Banner with Corrected Text-Based Logo -->
+    <!-- Bottom Buttons Container -->
+    <div class="flex flex-wrap justify-center gap-4 w-full mt-12 max-w-2xl mx-auto">
+        <button id="prev-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+            Prev
+        </button>
+        <button id="next-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+            Next
+        </button>
+    </div>
+    <!-- End Bottom Buttons Container -->
+    
+    <!-- Prime Banner with Corrected Text-Based Logo -->
     <div class="mt-12 bg-gray-800 p-8 rounded-xl shadow-xl flex flex-col sm:flex-row items-center justify-between space-y-6 sm:space-y-0 sm:space-x-8">
         <div class="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
             <!-- Simple text for the logo -->
@@ -92,7 +118,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Hardcoded TMDb API Bearer Token
+            // TMDb API Bearer Token
             const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NmFjMzdmY2M2NTIyMDljODI2MWQ2M2RmYjNhNWJhYSIsIm5iZiI6MTc1NjQ5MDU0Mi4wODksInN1YiI6IjY4YjFlYjJlM2NhZmM5ZjEyYjU0ZGE2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SuTr-jDVinXLwrFu2QpoozseO5TOeK7Uy_0HIPxqYZA";
 
             // === YOUR AMAZON ASSOCIATES TRACKING IDS HERE ===
@@ -113,14 +139,23 @@
             let year = new Date().getFullYear();
             let month = new Date().getMonth() + 1;
             let region = "UK";
+            let isAllTimeView = false;
+            let isAnticipatedView = false;
             
             const contentArea = document.getElementById('content-area');
             const yearSelect = document.getElementById('year-select');
             const monthSelect = document.getElementById('month-select');
             const regionSelect = document.getElementById('region-select');
-            const prevMonthBtn = document.getElementById('prev-month-btn');
-            const nextMonthBtn = document.getElementById('next-month-btn');
+            const dynamicControls = document.getElementById('dynamic-controls');
+            const mainTitle = document.getElementById('main-title');
+            
+            // Select all buttons using querySelectorAll
+            const prevMonthBtns = document.querySelectorAll('#prev-month-btn');
+            const nextMonthBtns = document.querySelectorAll('#next-month-btn');
+            const allTimeBtns = document.querySelectorAll('#all-time-btn');
+            const anticipatedBtns = document.querySelectorAll('#anticipated-btn');
             const primeBannerLink = document.getElementById('prime-banner-link');
+            
             const formatter = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
@@ -168,17 +203,50 @@
                 primeBannerLink.href = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`;
             }
 
-
             const fetchMovies = async () => {
                 if (!TMDB_TOKEN) {
-                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">A valid TMDb token is required to fetch movies.</div>`;
+                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">A valid TMDb token is required to fetch movies. Please edit the code to add your token.</div>`;
                     return;
                 }
                 
                 contentArea.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 space-y-4">
-                                            <div class="spinner"></div>
-                                            <p class="text-center text-lg text-gray-400">Loading movies...</p>
-                                         </div>`;
+                                              <div class="spinner"></div>
+                                              <p class="text-center text-lg text-gray-400">Loading movies...</p>
+                                             </div>`;
+                
+                if (isAllTimeView) {
+                    mainTitle.innerHTML = 'All-Time <span class="text-red-500">Top 10</span> Grossing Movies';
+                    dynamicControls.classList.add('hidden');
+                    prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    await fetchAndRenderAllTimeTop10();
+                    return;
+                }
+
+                if (isAnticipatedView) {
+                    mainTitle.innerHTML = 'Anticipated Upcoming <span class="text-red-500">Movies</span>';
+                    dynamicControls.classList.add('hidden');
+                    prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    await fetchAndRenderAnticipatedMovies();
+                    return;
+                }
+
+                // Logic to handle future months and change sorting
+                const today = new Date();
+                const selectedDate = new Date(year, month - 1, 1);
+                let sortBy = 'vote_count.desc';
+                
+                if (selectedDate > today) {
+                    sortBy = 'popularity.desc';
+                    mainTitle.innerHTML = `Anticipated <span class="text-red-500">Movies</span> for ${months[month - 1].name} ${year}`;
+                } else {
+                    mainTitle.innerHTML = `<span class="text-gray-400">Top 10</span> <span class="text-red-500">Box Office Hits</span>`;
+                }
+
+                dynamicControls.classList.remove('hidden');
+                prevMonthBtns.forEach(btn => btn.classList.remove('hidden'));
+                nextMonthBtns.forEach(btn => btn.classList.remove('hidden'));
 
                 try {
                     const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -186,7 +254,7 @@
                     const lastDate = `${year}-${String(month).padStart(2, "0")}-${lastDay}`;
             
                     const res = await fetch(
-                        `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${firstDay}&primary_release_date.lte=${lastDate}&region=${region}&sort_by=vote_count.desc&with_runtime.gte=60`,
+                        `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${firstDay}&primary_release_date.lte=${lastDate}&region=${region}&sort_by=${sortBy}&with_runtime.gte=60`,
                         {
                             headers: {
                                 Authorization: `Bearer ${TMDB_TOKEN}`,
@@ -206,10 +274,10 @@
                     
                     const moviesWithPosters = top10Movies.filter(m => m.poster_path);
 
-                    // Fetch streaming providers for each movie
+                    // Fetch streaming providers, director, and revenue for each movie
                     const moviesWithInfo = await Promise.all(
                         moviesWithPosters.map(async (movie) => {
-                            // Get details including IMDB ID
+                            // Get details including IMDB ID and Revenue
                             const detailsRes = await fetch(
                                 `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
                                 {
@@ -219,6 +287,18 @@
                                 }
                             );
                             const detailsData = await detailsRes.json();
+
+                            // Get Credits to find the Director
+                            const creditsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const creditsData = await creditsRes.json();
+                            const director = creditsData.crew.find(person => person.job === 'Director');
                             
                             // Use the new TMDb API endpoint for providers
                             let isAvailableOnPrime = false;
@@ -243,11 +323,10 @@
 
                             return { 
                                 ...movie, 
-                                budget: detailsData.budget,
                                 revenue: detailsData.revenue,
-                                vote_average: detailsData.vote_average,
                                 imdb_id: detailsData.imdb_id,
-                                isAvailableOnPrime: isAvailableOnPrime
+                                isAvailableOnPrime: isAvailableOnPrime,
+                                director: director ? director.name : 'Unknown'
                             };
                         })
                     );
@@ -262,8 +341,179 @@
                     contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch movies: ${e.message}</div>`;
                 }
             };
+            
+            const fetchAndRenderAllTimeTop10 = async () => {
+                try {
+                    const res = await fetch(
+                        `https://api.themoviedb.org/3/discover/movie?sort_by=revenue.desc&with_runtime.gte=60&vote_count.gte=1000`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${TMDB_TOKEN}`,
+                            },
+                        }
+                    );
+            
+                    if (res.status === 401) {
+                        throw new Error('401 - Unauthorized. Please check your TMDb token as it may be invalid or expired.');
+                    }
+                    if (!res.ok) {
+                        throw new Error(`${res.status} - ${res.statusText}`);
+                    }
+            
+                    const data = await res.json();
+                    const top10Movies = (data.results || []).slice(0, 10);
+                    
+                    const moviesWithPosters = top10Movies.filter(m => m.poster_path);
+
+                    // Fetch streaming providers, director, and revenue for each movie
+                    const moviesWithInfo = await Promise.all(
+                        moviesWithPosters.map(async (movie) => {
+                            // Get details including IMDB ID and Revenue
+                            const detailsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const detailsData = await detailsRes.json();
+
+                            // Get Credits to find the Director
+                            const creditsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const creditsData = await creditsRes.json();
+                            const director = creditsData.crew.find(person => person.job === 'Director');
+                            
+                            let isAvailableOnPrime = false;
+                            const providersRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const providersData = await providersRes.json();
+                            
+                            const providers = providersData.results[tmdbRegionMapping[region]];
+                            
+                            if (providers && providers.flatrate) {
+                                isAvailableOnPrime = providers.flatrate.some(provider => 
+                                    provider.provider_name === 'Amazon Prime Video'
+                                );
+                            }
+
+                            return { 
+                                ...movie, 
+                                revenue: detailsData.revenue,
+                                imdb_id: detailsData.imdb_id,
+                                isAvailableOnPrime: isAvailableOnPrime,
+                                director: director ? director.name : 'Unknown'
+                            };
+                        })
+                    );
+
+                    if (moviesWithInfo.length === 0) {
+                        contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">No posters available for the All-Time list.</div>`;
+                    } else {
+                        renderMovies(moviesWithInfo);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch All-Time movies: ${e.message}</div>`;
+                }
+            };
+            
+            const fetchAndRenderAnticipatedMovies = async () => {
+                try {
+                    const today = new Date().toISOString().slice(0, 10);
+                    const res = await fetch(
+                        `https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&primary_release_date.gte=${today}&with_runtime.gte=60`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${TMDB_TOKEN}`,
+                            },
+                        }
+                    );
+
+                    if (res.status === 401) {
+                        throw new Error('401 - Unauthorized. Please check your TMDb token as it may be invalid or expired.');
+                    }
+                    if (!res.ok) {
+                        throw new Error(`${res.status} - ${res.statusText}`);
+                    }
+
+                    const data = await res.json();
+                    const top10Movies = (data.results || []).slice(0, 10);
+
+                    const moviesWithPosters = top10Movies.filter(m => m.poster_path);
+
+                    // Fetch streaming providers and director for each movie
+                    const moviesWithInfo = await Promise.all(
+                        moviesWithPosters.map(async (movie) => {
+                            const detailsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
+                                {
+                                    headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+                                }
+                            );
+                            const detailsData = await detailsRes.json();
+                            
+                            const creditsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                                {
+                                    headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+                                }
+                            );
+                            const creditsData = await creditsRes.json();
+                            const director = creditsData.crew.find(person => person.job === 'Director');
+
+                            let isAvailableOnPrime = false;
+                            const providersRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers`,
+                                { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } }
+                            );
+                            const providersData = await providersRes.json();
+                            const providers = providersData.results[tmdbRegionMapping[region]];
+
+                            if (providers && providers.flatrate) {
+                                isAvailableOnPrime = providers.flatrate.some(provider => 
+                                    provider.provider_name === 'Amazon Prime Video'
+                                );
+                            }
+
+                            return {
+                                ...movie,
+                                revenue: null, // Revenue isn't available for upcoming movies
+                                imdb_id: detailsData.imdb_id,
+                                isAvailableOnPrime: isAvailableOnPrime,
+                                director: director ? director.name : 'Unknown'
+                            };
+                        })
+                    );
+                    
+                    if (moviesWithInfo.length === 0) {
+                        contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">No anticipated movies found for this region.</div>`;
+                    } else {
+                        renderMovies(moviesWithInfo);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch anticipated movies: ${e.message}</div>`;
+                }
+            };
+
 
             const renderMovies = (movies) => {
+                const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+
                 contentArea.innerHTML = `
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center">
                         ${movies.map(m => {
@@ -285,7 +535,7 @@
                                 buttonText = 'Buy on Amazon';
                                 primeLink = `https://www.amazon.com/prime?tag=${amazonTrackingIdUS}`; // Default to US
                             }
-                           
+                            
                             const imdbLink = m.imdb_id ? `https://www.imdb.com/title/${m.imdb_id}` : '#';
                             const imdbTarget = m.imdb_id ? '_blank' : '_self';
                             const imdbRel = m.imdb_id ? 'noopener noreferrer' : '';
@@ -294,9 +544,20 @@
                             const posterSrc = m.poster_path 
                                 ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
                                 : `https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}`;
+                            
+                            // Conditional info for anticipated movies vs. others
+                            let movieInfoHtml = '';
+                            if (isAnticipatedView) {
+                                // Format the release date to show Month Year
+                                const releaseDate = new Date(m.release_date);
+                                const formattedDate = dateFormatter.format(releaseDate);
+                                movieInfoHtml = `<p class="text-sm font-semibold text-gray-300 mt-1">Release: ${formattedDate}</p>`;
+                            } else {
+                                movieInfoHtml = `<p class="text-sm font-semibold text-gray-300 mt-1">Global Gross: <span class="text-green-500">${m.revenue > 0 ? formatter.format(m.revenue) : 'N/A'}</span></p>`;
+                            }
 
                             return `
-                                <div class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
+                                <div class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 movie-card">
                                     <a
                                         href="${imdbLink}"
                                         target="${imdbTarget}"
@@ -317,9 +578,9 @@
                                         >
                                             ${m.title}
                                         </a>
-                                        <div class="text-xs text-gray-300 text-center space-y-1 mb-2">
-                                            <p><span class="font-semibold text-white">TMDb Rating:</span> ${m.vote_average ? `${m.vote_average.toFixed(1)}/10` : 'N/A'}</p>
-                                        </div>
+                                        <p class="text-sm text-gray-400">Director: ${m.director}</p>
+                                        ${movieInfoHtml}
+                                        
                                         <div class="flex flex-col space-y-2 mt-2">
                                             <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-yellow-500 text-gray-900 text-sm font-semibold rounded-full hover:bg-yellow-400 transition-colors duration-200">
                                                 ${buttonText}
@@ -372,9 +633,29 @@
                 }
                 fetchMovies();
             });
+            
+            allTimeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    isAllTimeView = !isAllTimeView;
+                    isAnticipatedView = false;
+                    allTimeBtns.forEach(b => b.textContent = isAllTimeView ? 'Back to Monthly View' : 'All Time Top 10');
+                    anticipatedBtns.forEach(b => b.textContent = 'Anticipated Movies');
+                    fetchMovies();
+                });
+            });
 
-            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
-            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+            anticipatedBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    isAnticipatedView = !isAnticipatedView;
+                    isAllTimeView = false;
+                    anticipatedBtns.forEach(b => b.textContent = isAnticipatedView ? 'Back to Monthly View' : 'Anticipated Movies');
+                    allTimeBtns.forEach(b => b.textContent = 'All Time Top 10');
+                    fetchMovies();
+                });
+            });
+
+            prevMonthBtns.forEach(btn => btn.addEventListener('click', () => changeMonth(-1)));
+            nextMonthBtns.forEach(btn => btn.addEventListener('click', () => changeMonth(1)));
 
             fetchMovies();
         });
