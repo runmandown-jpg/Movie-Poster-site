@@ -27,6 +27,25 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
+        .director-link {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .director-link:hover {
+            color: #ef4444; /* text-red-500 */
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #ef4444;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen py-10 px-4 sm:px-8">
@@ -48,11 +67,14 @@
                 <button id="anticipated-btn" class="px-4 py-2 bg-yellow-500 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-yellow-400 transition-colors duration-200">
                     Anticipated Movies
                 </button>
+                <button id="yearly-btn" class="px-4 py-2 bg-green-500 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-green-400 transition-colors duration-200">
+                    Top 10 by Year
+                </button>
             </div>
             <!-- End Top Button Container -->
             
             <div id="dynamic-controls" class="flex flex-wrap justify-center items-center gap-4 w-full">
-                <div class="flex flex-col items-start w-36">
+                <div id="month-control" class="flex flex-col items-start w-36">
                     <label for="month-select" class="text-sm font-semibold text-gray-300 mb-1">Month</label>
                     <select id="month-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
@@ -62,14 +84,14 @@
                     <select id="year-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
 
-                <div class="flex flex-col items-start w-28">
+                <div id="region-control" class="flex flex-col items-start w-28">
                     <label for="region-select" class="text-sm font-semibold text-gray-300 mb-1">Region</label>
                     <select id="region-select" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
             </div>
           
             <!-- Top Button Container for Prev/Next -->
-            <div class="flex flex-wrap justify-center gap-4 w-full mt-4">
+            <div id="monthly-nav-controls" class="flex flex-wrap justify-center gap-4 w-full mt-4">
                 <button id="prev-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
                     Prev
                 </button>
@@ -84,14 +106,25 @@
         <div id="content-area" class="text-center text-lg text-gray-400 mt-20">
             <p>Loading movies...</p>
         </div>
+
+        <!-- Director Movies Page -->
+        <div id="director-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="director-title" class="text-3xl sm:text-4xl font-bold text-white"></h2>
+                <button id="back-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+                    Back to Movies
+                </button>
+            </div>
+            <div id="director-movies-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center"></div>
+        </div>
     </div>
 
     <!-- Bottom Buttons Container -->
-    <div class="flex flex-wrap justify-center gap-4 w-full mt-12 max-w-2xl mx-auto">
-        <button id="prev-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+    <div id="monthly-nav-controls-bottom" class="flex flex-wrap justify-center gap-4 w-full mt-12 max-w-2xl mx-auto">
+        <button id="prev-month-btn-bottom" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
             Prev
         </button>
-        <button id="next-month-btn" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
+        <button id="next-month-btn-bottom" class="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-200">
             Next
         </button>
     </div>
@@ -139,24 +172,39 @@
                 "KR": "KR",
             };
 
-            let year = new Date().getFullYear();
-            let month = new Date().getMonth() + 1;
+            // Set the initial month to the previous month
+            const previousMonthDate = new Date();
+            previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+            let year = previousMonthDate.getFullYear();
+            let month = previousMonthDate.getMonth() + 1;
+
             let region = "UK";
             let isAllTimeView = false;
             let isAnticipatedView = false;
+            let isYearlyView = false;
             
             const contentArea = document.getElementById('content-area');
+            const directorPage = document.getElementById('director-page');
+            const directorTitle = document.getElementById('director-title');
+            const directorMoviesGrid = document.getElementById('director-movies-grid');
+            const backBtn = document.getElementById('back-btn');
+
             const yearSelect = document.getElementById('year-select');
             const monthSelect = document.getElementById('month-select');
             const regionSelect = document.getElementById('region-select');
             const dynamicControls = document.getElementById('dynamic-controls');
             const mainTitle = document.getElementById('main-title');
+            const monthControl = document.getElementById('month-control');
+            const regionControl = document.getElementById('region-control');
+            const monthlyNavControls = document.getElementById('monthly-nav-controls');
+            const monthlyNavControlsBottom = document.getElementById('monthly-nav-controls-bottom');
             
             // Select all buttons using querySelectorAll
-            const prevMonthBtns = document.querySelectorAll('#prev-month-btn');
-            const nextMonthBtns = document.querySelectorAll('#next-month-btn');
-            const allTimeBtns = document.querySelectorAll('#all-time-btn');
-            const anticipatedBtns = document.querySelectorAll('#anticipated-btn');
+            const prevMonthBtns = document.querySelectorAll('#prev-month-btn, #prev-month-btn-bottom');
+            const nextMonthBtns = document.querySelectorAll('#next-month-btn, #next-month-btn-bottom');
+            const allTimeBtn = document.getElementById('all-time-btn');
+            const anticipatedBtn = document.getElementById('anticipated-btn');
+            const yearlyBtn = document.getElementById('yearly-btn');
             const primeBannerLink = document.getElementById('prime-banner-link');
             
             const formatter = new Intl.NumberFormat('en-US', {
@@ -220,8 +268,8 @@
                 if (isAllTimeView) {
                     mainTitle.innerHTML = 'All Time <span class="text-red-500">Top 10</span> Grossing Movies';
                     dynamicControls.classList.add('hidden');
-                    prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
-                    nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    monthlyNavControls.classList.add('hidden');
+                    monthlyNavControlsBottom.classList.add('hidden');
                     await fetchAndRenderAllTimeTop10();
                     return;
                 }
@@ -229,9 +277,19 @@
                 if (isAnticipatedView) {
                     mainTitle.innerHTML = '<span class="text-red-500">Upcoming Movies</span>';
                     dynamicControls.classList.add('hidden');
-                    prevMonthBtns.forEach(btn => btn.classList.add('hidden'));
-                    nextMonthBtns.forEach(btn => btn.classList.add('hidden'));
+                    monthlyNavControls.classList.add('hidden');
+                    monthlyNavControlsBottom.classList.add('hidden');
                     await fetchAndRenderAnticipatedMovies();
+                    return;
+                }
+
+                if (isYearlyView) {
+                    mainTitle.innerHTML = `<span class="text-gray-400">Top 10</span> <span class="text-red-500">Movies of ${year}</span>`;
+                    monthControl.classList.add('hidden');
+                    regionControl.classList.add('hidden');
+                    monthlyNavControls.classList.add('hidden');
+                    monthlyNavControlsBottom.classList.add('hidden');
+                    await fetchAndRenderYearlyTop10();
                     return;
                 }
 
@@ -248,8 +306,10 @@
                 }
 
                 dynamicControls.classList.remove('hidden');
-                prevMonthBtns.forEach(btn => btn.classList.remove('hidden'));
-                nextMonthBtns.forEach(btn => btn.classList.remove('hidden'));
+                monthControl.classList.remove('hidden');
+                regionControl.classList.remove('hidden');
+                monthlyNavControls.classList.remove('hidden');
+                monthlyNavControlsBottom.classList.remove('hidden');
 
                 try {
                     const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -329,7 +389,8 @@
                                 revenue: detailsData.revenue,
                                 imdb_id: detailsData.imdb_id,
                                 isAvailableOnPrime: isAvailableOnPrime,
-                                director: director ? director.name : 'Unknown'
+                                director: director ? director.name : 'Unknown',
+                                directorId: director ? director.id : null
                             };
                         })
                     );
@@ -418,7 +479,8 @@
                                 revenue: detailsData.revenue,
                                 imdb_id: detailsData.imdb_id,
                                 isAvailableOnPrime: isAvailableOnPrime,
-                                director: director ? director.name : 'Unknown'
+                                director: director ? director.name : 'Unknown',
+                                directorId: director ? director.id : null
                             };
                         })
                     );
@@ -501,7 +563,8 @@
                                 revenue: null, // Revenue isn't available for upcoming movies
                                 imdb_id: detailsData.imdb_id,
                                 isAvailableOnPrime: isAvailableOnPrime,
-                                director: director ? director.name : 'Unknown'
+                                director: director ? director.name : 'Unknown',
+                                directorId: director ? director.id : null
                             };
                         })
                     );
@@ -517,10 +580,100 @@
                 }
             };
 
+            const fetchAndRenderYearlyTop10 = async () => {
+                 try {
+                    const res = await fetch(
+                        `https://api.themoviedb.org/3/discover/movie?primary_release_year=${year}&sort_by=revenue.desc&with_runtime.gte=60&vote_count.gte=100`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${TMDB_TOKEN}`,
+                            },
+                        }
+                    );
+            
+                    if (res.status === 401) {
+                        throw new Error('401 - Unauthorized. Please check your TMDb token as it may be invalid or expired.');
+                    }
+                    if (!res.ok) {
+                        throw new Error(`${res.status} - ${res.statusText}`);
+                    }
+            
+                    const data = await res.json();
+                    const top10Movies = (data.results || []).slice(0, 10);
+                    
+                    const moviesWithPosters = top10Movies.filter(m => m.poster_path);
+
+                    // Fetch streaming providers, director, and revenue for each movie
+                    const moviesWithInfo = await Promise.all(
+                        moviesWithPosters.map(async (movie) => {
+                            // Get details including IMDB ID and Revenue
+                            const detailsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const detailsData = await detailsRes.json();
+
+                            // Get Credits to find the Director
+                            const creditsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const creditsData = await creditsRes.json();
+                            const director = creditsData.crew.find(person => person.job === 'Director');
+                            
+                            let isAvailableOnPrime = false;
+                            const providersRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers`,
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${TMDB_TOKEN}`,
+                                    },
+                                }
+                            );
+                            const providersData = await providersRes.json();
+                            
+                            const providers = providersData.results[tmdbRegionMapping[region]];
+                            
+                            if (providers && providers.flatrate) {
+                                isAvailableOnPrime = providers.flatrate.some(provider => 
+                                    provider.provider_name === 'Amazon Prime Video'
+                                );
+                            }
+
+                            return { 
+                                ...movie, 
+                                revenue: detailsData.revenue,
+                                imdb_id: detailsData.imdb_id,
+                                isAvailableOnPrime: isAvailableOnPrime,
+                                director: director ? director.name : 'Unknown',
+                                directorId: director ? director.id : null
+                            };
+                        })
+                    );
+
+                    if (moviesWithInfo.length === 0) {
+                        contentArea.innerHTML = `<div class="text-center text-lg text-gray-400 mt-20">No posters available for the All-Time list.</div>`;
+                    } else {
+                        renderMovies(moviesWithInfo);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    contentArea.innerHTML = `<div class="text-center text-lg text-red-400 mt-20 p-4 bg-gray-800 rounded-lg">Failed to fetch yearly movies: ${e.message}</div>`;
+                }
+            };
+
 
             const renderMovies = (movies) => {
                 const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
-
+                
                 contentArea.innerHTML = `
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center">
                         ${movies.map(m => {
@@ -562,6 +715,14 @@
                             } else {
                                 movieInfoHtml = `<p class="text-sm font-semibold text-gray-300 mt-1">Global Gross: <span class="text-green-500">${m.revenue > 0 ? formatter.format(m.revenue) : 'N/A'}</span></p>`;
                             }
+                            
+                            const directorHtml = m.directorId ? `
+                                <span class="text-sm text-gray-400">
+                                    Director: 
+                                    <a class="director-link" data-director-id="${m.directorId}" data-director-name="${m.director}">
+                                        ${m.director}
+                                    </a>
+                                </span>` : `<p class="text-sm text-gray-400">Director: N/A</p>`;
 
                             return `
                                 <div class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 movie-card">
@@ -585,7 +746,7 @@
                                         >
                                             ${m.title}
                                         </a>
-                                        <p class="text-sm text-gray-400">Director: ${m.director}</p>
+                                        ${directorHtml}
                                         ${movieInfoHtml}
                                         
                                         <div class="flex flex-col space-y-2 mt-2">
@@ -606,6 +767,78 @@
                 `;
             };
 
+            const fetchDirectorMovies = async (directorId, directorName) => {
+                contentArea.classList.add('hidden');
+                directorPage.classList.remove('hidden');
+                directorTitle.textContent = `Movies by ${directorName}`;
+                directorMoviesGrid.innerHTML = `
+                    <div class="flex flex-col items-center justify-center mt-20 space-y-4 col-span-full">
+                        <div class="spinner"></div>
+                        <p class="text-center text-lg text-gray-400">Finding movies for ${directorName}...</p>
+                    </div>`;
+
+                try {
+                    // Filter out movies shorter than 60 minutes
+                    const res = await fetch(
+                        `https://api.themoviedb.org/3/discover/movie?with_crew=${directorId}&with_runtime.gte=60&sort_by=primary_release_date.desc`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${TMDB_TOKEN}`,
+                            },
+                        }
+                    );
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    const data = await res.json();
+                    
+                    const moviesWithPosters = data.results.filter(m => m.poster_path).slice(0, 20);
+
+                    const moviesWithImdbId = await Promise.all(
+                        moviesWithPosters.map(async (movie) => {
+                            const detailsRes = await fetch(
+                                `https://api.themoviedb.org/3/movie/${movie.id}?append_to_response=external_ids`,
+                                { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } }
+                            );
+                            const detailsData = await detailsRes.json();
+                            return { ...movie, imdb_id: detailsData.imdb_id };
+                        })
+                    );
+                    
+                    if (moviesWithImdbId.length === 0) {
+                        directorMoviesGrid.innerHTML = `<p class="text-center text-lg text-gray-400 mt-20 col-span-full">No movies found for this director.</p>`;
+                    } else {
+                         directorMoviesGrid.innerHTML = moviesWithImdbId.map(m => {
+                            const posterSrc = m.poster_path 
+                                ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
+                                : `https://placehold.co/500x750/111/fff?text=${encodeURIComponent(m.title)}`;
+                                
+                            const imdbLink = m.imdb_id ? `https://www.imdb.com/title/${m.imdb_id}` : '#';
+                            const imdbTarget = m.imdb_id ? '_blank' : '_self';
+                            const imdbRel = m.imdb_id ? 'noopener noreferrer' : '';
+
+                            return `
+                                <a
+                                    class="relative flex flex-col rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 movie-card"
+                                    href="${imdbLink}"
+                                    target="${imdbTarget}"
+                                    rel="${imdbRel}"
+                                >
+                                    <img src="${posterSrc}" alt="${m.title}" class="w-full h-auto object-cover"/>
+                                    <div class="p-4 text-center bg-gray-800 flex-grow">
+                                        <p class="block text-white text-base font-bold leading-tight line-clamp-2">${m.title}</p>
+                                        <p class="text-sm text-gray-400 mt-1">${m.release_date.split('-')[0]}</p>
+                                    </div>
+                                </a>
+                            `;
+                        }).join('');
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                    directorMoviesGrid.innerHTML = `<p class="text-center text-lg text-red-400 mt-20 col-span-full">Failed to fetch director's movies: ${e.message}</p>`;
+                }
+            };
+
+
             const changeMonth = (dir) => {
                 month += dir;
                 if (month === 0) {
@@ -617,6 +850,47 @@
                 }
                 yearSelect.value = year;
                 monthSelect.value = month;
+                fetchMovies();
+            };
+
+            const toggleView = (view) => {
+                isAllTimeView = view === 'allTime';
+                isAnticipatedView = view === 'anticipated';
+                isYearlyView = view === 'yearly';
+
+                // Reset button texts
+                allTimeBtn.textContent = 'All Time Top 10';
+                anticipatedBtn.textContent = 'Anticipated Movies';
+                yearlyBtn.textContent = 'Top 10 by Year';
+
+                // Update text for the active button
+                if (isAllTimeView) {
+                    allTimeBtn.textContent = 'Back to Monthly View';
+                } else if (isAnticipatedView) {
+                    anticipatedBtn.textContent = 'Back to Monthly View';
+                } else if (isYearlyView) {
+                    yearlyBtn.textContent = 'Back to Monthly View';
+                }
+
+                // Show/hide controls based on view
+                if (isYearlyView) {
+                    monthControl.classList.add('hidden');
+                    regionControl.classList.add('hidden');
+                    monthlyNavControls.classList.add('hidden');
+                    monthlyNavControlsBottom.classList.add('hidden');
+                    dynamicControls.classList.remove('hidden');
+                } else if (isAllTimeView || isAnticipatedView) {
+                    dynamicControls.classList.add('hidden');
+                    monthlyNavControls.classList.add('hidden');
+                    monthlyNavControlsBottom.classList.add('hidden');
+                } else {
+                    dynamicControls.classList.remove('hidden');
+                    monthControl.classList.remove('hidden');
+                    regionControl.classList.remove('hidden');
+                    monthlyNavControls.classList.remove('hidden');
+                    monthlyNavControlsBottom.classList.remove('hidden');
+                }
+
                 fetchMovies();
             };
             
@@ -641,24 +915,25 @@
                 fetchMovies();
             });
             
-            allTimeBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    isAllTimeView = !isAllTimeView;
-                    isAnticipatedView = false;
-                    allTimeBtns.forEach(b => b.textContent = isAllTimeView ? 'Back to Monthly View' : 'All Time Top 10');
-                    anticipatedBtns.forEach(b => b.textContent = 'Anticipated Movies');
-                    fetchMovies();
-                });
-            });
+            allTimeBtn.addEventListener('click', () => toggleView(isAllTimeView ? 'monthly' : 'allTime'));
+            anticipatedBtn.addEventListener('click', () => toggleView(isAnticipatedView ? 'monthly' : 'anticipated'));
+            yearlyBtn.addEventListener('click', () => toggleView(isYearlyView ? 'monthly' : 'yearly'));
 
-            anticipatedBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    isAnticipatedView = !isAnticipatedView;
-                    isAllTimeView = false;
-                    anticipatedBtns.forEach(b => b.textContent = isAnticipatedView ? 'Back to Monthly View' : 'Anticipated Movies');
-                    allTimeBtns.forEach(b => b.textContent = 'All Time Top 10');
-                    fetchMovies();
-                });
+            // Universal "Back" button handler
+            backBtn.addEventListener('click', () => {
+                directorPage.classList.add('hidden');
+                contentArea.classList.remove('hidden');
+            });
+            
+            // Event delegation for director clicks
+            document.addEventListener('click', (e) => {
+                const directorLink = e.target.closest('.director-link');
+                if (directorLink) {
+                    e.preventDefault();
+                    const directorId = directorLink.dataset.directorId;
+                    const directorName = directorLink.dataset.directorName;
+                    fetchDirectorMovies(directorId, directorName);
+                }
             });
 
             prevMonthBtns.forEach(btn => btn.addEventListener('click', () => changeMonth(-1)));
